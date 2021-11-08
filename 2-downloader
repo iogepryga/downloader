@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style type="text/css" media="screen, print">
+		<!--
+			body { margin: 30px 50px; font-family: sans-serif; }
+			img { margin: 15px; border: 0px; display: block }
+			pre  { margin: 10px; padding: 10px; background: #EEE; overflow:auto; font-size:small; font-family:monospace; }
+			pre.file { background: white; border: solid 1px black;}
+			.cr  { font-size: 9pt; }
+			.update { font-size: 10px; margin: 30px 0 0 0; border-top: 1px solid #000; }
+			body { counter-reset: q; }
+			h2 { padding-top: .5em; border-top: solid 1px black; }
+			p.question:before { content: counter(q) ". "; counter-increment: q; }
+		-->		
+		</style>		
+		<title> Tâches longues et interactivité </title>
+	</head>
+	<body>
+		<p><a href="../../../../">~</a> / <a href="../../../">INFO4</a> / <a href="../../">IHM</a> / <a href="../">tps</a> / <a href=".">2-downloader</a> /</p>
+		
+		<h1> Tâches longues et interactivité avec Java/Swing </h1>
+		<p class="cr">© 2013—2020 – <a href="http://iihm.imag.fr/blanch/">Renaud Blanch</a></p>
+		
+		<p>
+Le but de ce TD est d'aborder la question des tâches longues dans les applications interactives.
+Celles-ci nécessitent en effet d'utiliser une programmation multi-fils d'exécution si l'on veut que l'application reste interactive pendant l'exécution de la tâche longue.
+Il s'agit donc de réaliser un gestionnaire de téléchargement qui permettra aux utilisateurs de lancer, mettre en pause, annuler plusieurs téléchargements simultanément.
+		</p>
+		
+		<h2>Questions</h2>
+		<p class="question">
+Récupérez les <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/blanchr/java-swing-downloader">sources du squelette</a> de l'application.
+		</p>
+<pre>
+% <b>git clone <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/blanchr/java-swing-downloader">https://gricad-gitlab.univ-grenoble-alpes.fr/blanchr/java-swing-downloader</a> downloader</b>
+</pre>
+		<p>
+Le noyau fonctionnel permet de télécharger les fichiers dont les URLs sont passées sur la ligne de commande.
+
+Par exemple :
+		<pre>
+% <b>cd downloader</b>
+downloader% <b>ant jar</b>
+downloader% <b>java -cp build/jar/Downloader.jar downloader.fc.Test http://iihm.imag.fr/index.html</b></pre>
+
+Ou, si vous n'avez pas ant:
+		<pre>
+% <b>cd downloader/src</b>
+downloader/src% <b>javac downloader/fc/Test.java</b>
+downloader/src% <b>java downloader.fc.Test http://iihm.imag.fr/index.html</b></pre>
+
+Lisez et comprenez le code de la classe <code>downloader.fc.Downloader</code> ainsi que la manière dont la classe <code>downloader.fc.Test</code> l'utilise.
+		</p><p>
+Pour tester ce code, vous pouvez l'exécuter (<i>Run > Run Project</i>), mais il ne fera rien si on n'indique pas quelle URL télécharger au programme en lui passant via un argument de la ligne de commande.
+Pour cela, ouvrir la fenêtre de configuration du projet (<i>Run > Set Project Configuration > Customize…</i>) et, dans l'onglet <i>Run</i>, indiquez une URL dans le champs <i>Arguments:</i> (par exemple <code>http://iihm.imag.fr/index.html</code>).
+		</p>
+		
+		<p class="question">
+Créez un classe <code>downloader.ui.Main</code> qui ouvre un fenêtre principale, lance un téléchargement en tâche de fond (dans un <a href="https://docs.oracle.com/javase/8/docs/api/index.html?java/lang/Thread.html"><code>Thread</code></a> dédié) et utilise une <a href="https://docs.oracle.com/javase/8/docs/api/index.html?javax/swing/JProgressBar.html">barre de progression</a> pour donner un feedback à la progression du téléchargement.
+		</p><p>
+Spécialisez pour cela une <code>JProgressBar</code> dans une nouvelle classe <code>downloader.ui.Download</code> qui prend en argument de son constructeur un <code>downloader.fc.Downloader</code> et s'y abonne.
+Pour cela, réalisez un <a href='https://docs.oracle.com/javase/8/docs/api/index.html?java/beans/PropertyChangeListener.html'><code>PropertyChangeListener</code></a> qui met à jour la valeur de la barre de progression (<code>setValue</code> et <code>setString</code> lorsque la propriété <code>progress</code> change.
+		</p>
+		
+		<p class="question">
+Modifiez la classe <code>downloader.fc.Downloader</code> pour en faire une spécialisation de <a href="https://docs.oracle.com/javase/8/docs/api/index.html?javax/swing/SwingWorker.html"><code>SwingWorker</code></a> (lisez bien les exemples situés au début de la documentation, ainsi que le tutoriel <a href="https://docs.oracle.com/javase/tutorial/uiswing/concurrency/worker.html">Worker Threads and SwingWorker</a> pour comprendre à quoi il sert).
+Adaptez le reste de votre code à ce changement, et vérifiez que cela simplifie votre code.
+		</p>
+		
+		<p class="question">
+Ajoutez à la fenêtre principale un champs texte et un bouton qui permettent à l'utilisateur d'entrer une URL et de lancer son téléchargement.
+Pour gérer la liste des téléchargement, vous pouvez utiliser le gestionnaire de géométrie <code>downloader.ui.StackLayout</code> fourni.
+		</p><p>
+Voilà à quoi pourra ressembler votre interface utilisateur à ce stade :
+		</p>
+<img src="simple-ui.png" width="500" height="300" alt="exemple d'interface"/>
+		
+		<p class="question">
+Améliorez la présentation des téléchargements en affichant avec chaque barre de défilement l'URL du fichier téléchargé et un bouton permettant de supprimer ce téléchargement.
+Pour cela modifiez votre classe <code>downloader.ui.Download</code> pour qu'elle spécialise un <code>JPanel</code> qui lui même contiendra les différents éléments d'interface propres à chaque téléchargement.
+		</p>
+		
+		<p class="question">
+Ajoutez un bouton permettant alternativement de mettre un téléchargement en pause et de le reprendre.
+Pour cela, ajouter des méthodes <code>play</code> et <code>pause</code> à la classe <code>downloader.fc.Downloader</code> (on pourra à cette fin utiliser un <a href="https://docs.oracle.com/javase/8/docs/api/index.html?java/util/concurrent/locks/ReentrantLock.html"><code>Lock</code></a>).
+		</p>
+		
+		<p>
+Le résultat final pourra ressembler à l'image suivante :
+<img src="final-ui.png" width="500" height="300" alt="interface finale"/>
+		</p>
+
+		<p class="update">mise à jour : 8 nov 2021</p>
+	</body>
+</html>

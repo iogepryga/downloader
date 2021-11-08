@@ -26,7 +26,6 @@ public class Downloader extends SwingWorker {
 	File temp;
 	FileOutputStream out;
 
-	private int _progress;
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	public Downloader(String uri) {
