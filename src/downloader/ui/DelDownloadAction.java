@@ -14,6 +14,7 @@ public class DelDownloadAction extends AbstractAction {
 	JPanel downloadlist;
 
 	public DelDownloadAction(JPanel downloadlist, Download download, Downloader downloader) {
+		super("X");
 		this.download = download;
 		this.downloader = downloader;
 		this.downloadlist = downloadlist;

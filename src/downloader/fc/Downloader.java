@@ -11,6 +11,8 @@ import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.swing.SwingWorker;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
@@ -25,10 +27,15 @@ public class Downloader extends SwingWorker {
 	String filename;
 	File temp;
 	FileOutputStream out;
+	
+	boolean ispaused;
+	private ReentrantLock lock;
 
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	public Downloader(String uri) {
+		ispaused = false;
+		lock = new ReentrantLock();
 		try {
 			url = new URL(uri);
 
@@ -58,6 +65,10 @@ public class Downloader extends SwingWorker {
 		int count = 0;
 
 		while (true) {
+			if(ispaused) {
+				lock.lock();
+				lock.unlock();
+			}
 			try {
 				count = in.read(buffer, 0, CHUNK_SIZE);
 			} catch (IOException e) {
@@ -96,5 +107,17 @@ public class Downloader extends SwingWorker {
 	@Override
 	protected String doInBackground() throws Exception {
 		return this.download();
+	}
+	
+	public void play() {
+		ispaused = false;
+	}
+	
+	public void pause() {
+		ispaused = true;
+	}
+	
+	public ReentrantLock getLock() {
+		return lock;
 	}
 }
